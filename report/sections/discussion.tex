@@ -1,60 +1,26 @@
-\section{Discussion}
+\section{Discussion and Conclusion}
 \label{sec:discussion}
 
-The CIFAR-10 results are overwhelmingly negative for the variance-reduction composition hypothesis. This section analyzes each failure mode, explains the 2D-to-CIFAR gap, and answers our research questions.
+\subsection{Failure Analysis}
 
-\subsection{Why Cell\_000 (Baseline) Failed}
+\paragraph{Baseline divergence (cell\_000).} The OT path denominator $1-(1-\sigma_{\min})t$ reaches $10^{-4}$ near $t{=}1$, producing velocity magnitudes ${\sim}10^4$. Under fp16, this overflows after ${\sim}18{,}700$ steps. BatchOT prevents this: by minimizing transport cost, it keeps $\|x_1 - x_0\|$ small, so both the numerator and denominator of Eq.~\ref{eq:ot_vf} remain moderate. BatchOT is not just a variance reducer---it is a \emph{numerical stabilizer} for the OT path.
 
-Cell\_000 uses the simplest configuration: independent coupling, standard CFM loss, and uniform timestep sampling. It diverged to NaN at step ${\sim}18{,}700$. The root cause is a numerical issue in the OT path's conditional vector field (Eq.~\ref{eq:ot_vf}):
-\begin{equation}
-    \ut(x | x_1) = \frac{x_1 - (1 - \sigma_{\min}) x}{1 - (1 - \sigma_{\min}) t}.
-\end{equation}
-The denominator $1 - (1 - \sigma_{\min}) t$ approaches $\sigma_{\min} = 10^{-4}$ as $t \to 1$. Under fp16 mixed precision, this produces values near $10^{4}$, which cascade through the network gradients and eventually overflow.
+\paragraph{StableVM collapse (cells 010/011/110/111).} The log-probability (Eq.~\ref{eq:log_prob}) contains the term $-d\log\sigma_t$. For CIFAR-10 ($d = 3{\times}32{\times}32 = 3072$) near $t{=}1$:
+\begin{equation*}
+    -d\log\sigma_t \approx -3072 \times \log(10^{-4}) \approx 28{,}300.
+\end{equation*}
+This enormous value causes the softmax over importance weights to collapse onto a single reference sample, producing a noisy, numerically unstable target. In 2D ($d{=}2$), the same term yields only ${\sim}18.4$, explaining why StableVM works perfectly in Study~1 but oscillates wildly on CIFAR-10.
 
-\textbf{Why BatchOT prevents this:} With independent coupling, the numerator $x_1 - (1-\sigma_{\min})x$ can be large because $x_0$ and $x_1$ are unrelated---a noise sample may be far from its paired data point. BatchOT coupling minimizes the transport cost, keeping $\|x_1 - x_0\|$ small. Since $x_t = t x_1 + \sigma_t x_0$ interpolates between paired points, both the numerator and denominator of $\ut$ remain moderate, preventing the overflow. This explains why cell\_100 converges while cell\_000 does not: BatchOT is not just a variance-reduction technique---it is a \emph{numerical stabilizer} for the OT path under limited precision.
+\paragraph{TPC gradient explosion (cells 001/101).} The consistency penalty $\|\vt(\xt,t_1) - \vt(\xt,t_2)\|^2$ compares velocities at $t_1 \approx 0$ and $t_2 \approx 1$. Near $t{=}1$, velocity magnitudes are ${\sim}1/\sigma_{\min} = 10^4$; near $t{=}0$, they are $O(1)$. The penalty gradient is dominated by the large-$t$ term, causing gradient explosions that trigger NaN at steps 14--17k.
 
-\subsection{Why StableVM Failed}
+\subsection{Answers to Research Questions}
 
-All four StableVM cells (010, 011, 110, 111) exhibit extreme loss oscillation between ${\sim}40$ and ${\sim}22{,}000$. The cause lies in the log-probability computation (Eq.~\ref{eq:log_prob}):
-\begin{equation}
-    \log p_t(x | x_1) = -\frac{d}{2}\log(2\pi) - d \log \sigma_t - \frac{1}{2\sigma_t^2}\|x - \mu_t(x_1)\|^2.
-\end{equation}
+\textbf{RQ1:} The three axes are \emph{not} additive---combining BatchOT with StableVM or TPC \emph{destroys} the convergence that BatchOT alone provides. \textbf{RQ2:} BatchOT is unambiguously the most impactful single axis, consistent with \citet{tong2024improving}. \textbf{RQ3:} Geometric insights transfer (OT paths are straighter, solvers are more efficient), but stability insights do not: techniques safe in 2D fail catastrophically at $d{=}3072$.
 
-The critical term is $-d \log \sigma_t$. For CIFAR-10, $d = 3 \times 32 \times 32 = 3072$. Near $t = 1$, $\sigma_t \approx \sigma_{\min} = 10^{-4}$, so:
-\begin{equation}
-    -d \log \sigma_t \approx -3072 \times \log(10^{-4}) \approx 3072 \times 9.21 \approx 28{,}300.
-\end{equation}
-This enormous value dominates the softmax in the importance weights (Eq.~\ref{eq:stablevm_weights}), causing the weights to concentrate on a single reference sample---whichever $x_1^{(k)}$ is closest to $\xt$. The resulting target is effectively a single-sample estimate with high variance, but computed through a numerically unstable pathway. The loss oscillation reflects the softmax flipping between different reference samples across training steps.
+\subsection{Limitations}
 
-\textbf{Why this is invisible in 2D:} When $d = 2$, the same term yields $-2 \times \log(10^{-4}) \approx 18.4$, which is small enough that the softmax produces meaningful weight distributions across all $K$ references. The technique works as intended in low dimensions but breaks catastrophically when $d$ is large.
+All cells used a single seed, fast mode (9M parameters, 80k steps), and fp16 mixed precision without gradient clipping. Gradient clipping and fp32 training might rescue the baseline (cell\_000), but the StableVM and TPC instabilities are structural---they stem from dimension-dependent scaling, not precision. The two studies use different codebases (MLP vs.\ U-Net), so direct numerical comparisons between them are not meaningful.
 
-\subsection{Why TPC Failed}
+\subsection{Conclusion}
 
-Cells 001 and 101 diverged to NaN at steps ${\sim}16{,}600$ and ${\sim}14{,}400$ respectively. The TPC consistency penalty (Eq.~\ref{eq:tpc_loss}) compares velocity predictions at complementary timesteps:
-\begin{equation}
-    \lambda \left\| \vt(\xt^{(1)}, t_1) - \vt(\xt^{(2)}, t_2) \right\|^2, \quad t_2 = 1 - t_1.
-\end{equation}
-
-When $t_1$ is close to 0 and $t_2$ close to 1, the velocity magnitudes at these two timesteps are fundamentally different: near $t=0$ the flow must move slowly from noise, while near $t=1$ it must make fine adjustments toward the data manifold. The conditional vector field magnitudes differ by orders of magnitude due to the $1/(1-(1-\sigma_{\min})t)$ denominator. The consistency penalty produces gradients that are proportional to this mismatch, leading to gradient explosions that destabilize training.
-
-\textbf{Note:} Cell\_000 also diverged to NaN without TPC, but for a different reason (fp16 overflow from independent coupling). The NaN onset is earlier for TPC cells (14--17k steps vs.\ 18.7k), suggesting that TPC accelerates the instability.
-
-\subsection{The 2D-to-CIFAR Gap}
-
-All four flow-matching variants in Study~1 work perfectly in 2D, with no sign of the catastrophic failures observed on CIFAR-10. The fundamental reason is \textbf{dimensionality}:
-
-\begin{itemize}[leftmargin=*]
-    \item StableVM's log-probability scales as $O(d)$: harmless when $d=2$, catastrophic when $d=3072$.
-    \item The OT path's denominator creates velocities of magnitude $\sim 1/\sigma_{\min}$. In 2D, the gradient norm stays bounded; in $d=3072$, the per-channel gradient accumulation amplifies the instability.
-    \item TPC's consistency penalty couples velocities at $t$ and $1-t$ whose magnitudes diverge more severely in high dimensions, where the velocity field must navigate a higher-dimensional landscape.
-\end{itemize}
-
-This gap carries a methodological warning: \textbf{2D experiments are valuable for building geometric intuition but insufficient for validating numerical stability}. Any technique involving log-probabilities, importance weights, or time-endpoint comparisons should be stress-tested in the target dimension before deployment.
-
-\subsection{Answering the Research Questions}
-
-\paragraph{RQ1: Are the three axes additive?} \textbf{No.} The results are emphatically negative. Not only are the axes not additive, but combining BatchOT with either StableVM or TPC actively \emph{destroys} the convergence that BatchOT alone provides. Cell\_100 (BatchOT only) converges to FID~18.4; adding TPC (cell\_101) causes NaN divergence; adding StableVM (cell\_110) causes wild instability.
-
-\paragraph{RQ2: Which single axis provides the largest improvement?} \textbf{BatchOT coupling}, unambiguously. It is the only axis whose inclusion leads to convergence (when used alone). StableVM and TPC both degrade performance in every tested configuration. BatchOT acts as both a variance reducer (shorter, straighter trajectories) and a numerical stabilizer (bounded velocity magnitudes).
-
-\paragraph{RQ3: Do 2D insights transfer?} \textbf{Partially.} The geometric insight from Study~1---that OT-type paths produce straighter trajectories and better low-NFE robustness---transfers directly: cell\_100's midpoint solver at NFE=40 matches Euler at NFE=100, confirming the trajectory-straightness advantage. However, the stability insights do \emph{not} transfer: techniques that work flawlessly in 2D fail catastrophically in high dimensions.
+BatchOT coupling is validated as the key variance-reduction ingredient for CFM. StableVM and TPC require dimension-aware redesigns before deployment on image data: normalizing importance weights by $1/d$, restricting TPC pairs to $t \in [0.1, 0.9]$, or detaching the consistency penalty from the gradient. More broadly, variance-reduction techniques must be validated not only for their statistical properties but for their numerical stability in the target dimension.

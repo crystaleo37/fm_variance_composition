@@ -1,26 +1,30 @@
-\section{Introduction}
+\section{Introduction and Background}
 
-Generative modeling has undergone a paradigm shift with the success of diffusion models \citep{ho2020denoising, song2021scorebased}, which learn to reverse a noise-corruption process to generate samples. While highly effective, these models require simulating stochastic differential equations (SDEs) during both training and sampling, leading to computational overhead and sensitivity to discretization.
+Flow Matching \citep{lipman2023flow} trains continuous normalizing flows by regressing a neural velocity field $\vt(x,t)$ against a target vector field that transports a prior $p_0 = \mathcal{N}(0,I)$ to data $p_1$. Conditional Flow Matching (CFM) makes this tractable by decomposing the marginal target into conditional terms. For each data point $x_1$, a conditional probability path $p_t(x|x_1)$ defines a Gaussian interpolation, and the CFM loss regresses against the conditional vector field:
+\begin{equation}
+    \mathcal{L}_{\text{CFM}}(\theta) = \E_{t,x_0,x_1} \left\| \vt(\xt, t) - \ut(\xt | x_1) \right\|^2.
+    \label{eq:cfm_loss}
+\end{equation}
+Under the \textbf{OT probability path} \citep{lipman2023flow}, the interpolation is linear: $\mu_t(x_1) = t \cdot x_1$, $\sigma_t = 1-(1-\sigma_{\min})t$ with $\sigma_{\min}=10^{-4}$, yielding:
+\begin{equation}
+    \ut(x|x_1) = \frac{x_1 - (1-\sigma_{\min})x}{1-(1-\sigma_{\min})t}.
+    \label{eq:ot_vf}
+\end{equation}
 
-\textbf{Flow Matching} (FM), introduced by \citet{lipman2023flow}, offers an alternative based on continuous normalizing flows (CNFs). Instead of learning to reverse a diffusion process, FM directly regresses a neural velocity field $\vt(x, t)$ against a target vector field that transports a simple prior $p_0$ (e.g., standard Gaussian) to the data distribution $p_1$. The key advantage is simulation-free training: no ODE must be solved during the training loop, only at sampling time.
+While unbiased, the single-sample conditional target has high variance. Three techniques address this along independent axes:
 
-\textbf{Conditional Flow Matching} (CFM) makes FM practical by decomposing the intractable marginal vector field into tractable conditional terms. Each training sample defines a conditional probability path from noise to data, and the velocity field is trained to match the conditional vector field along this path. This yields a simple regression loss that is unbiased for the marginal FM objective.
+\paragraph{BatchOT coupling.} \citet{tong2024improving} replace independent noise--data pairing with minibatch optimal transport: within each batch, Sinkhorn's algorithm \citep{cuturi2013sinkhorn} finds a low-cost assignment between noise and data, producing shorter, straighter interpolation paths.
 
-\paragraph{The variance problem.} While unbiased, the CFM loss has high variance because each training step sees only a single conditional vector field sample. This variance manifests as noisy gradients, slower convergence, and degraded sample quality at low numbers of function evaluations (NFE). Three independent research directions have proposed solutions along different axes:
+\paragraph{StableVM objective.} For each $\xt$, $K{=}16$ references $\{x_1^{(k)}\}$ are drawn from a memory bank. Importance weights $w_k = \softmax_k(\log p_t(\xt|x_1^{(k)}))$ yield a multi-reference target $\ut^{\text{VM}} = \sum_k w_k \ut(\xt|x_1^{(k)})$. The log-probability under the OT path is:
+\begin{equation}
+    \log p_t(x|x_1) = -\tfrac{d}{2}\log(2\pi) - d\log\sigma_t - \tfrac{1}{2\sigma_t^2}\|x - \mu_t(x_1)\|^2.
+    \label{eq:log_prob}
+\end{equation}
 
-\begin{enumerate}[leftmargin=*]
-    \item \textbf{Coupling} --- replacing independent noise--data pairing ($x_0 \sim p_0$ independent of $x_1 \sim p_1$) with minibatch optimal transport (BatchOT), which finds low-cost pairings within each minibatch \citep{tong2024improving}. This straightens trajectories and reduces the magnitude of the velocity field.
-    \item \textbf{Objective} --- replacing the single-sample conditional target with an importance-weighted average over multiple reference samples, approximating the marginal vector field more accurately (StableVM).
-    \item \textbf{Timestep estimation} --- replacing uniform timestep sampling with antithetic temporal pairs and a consistency penalty that couples velocity predictions at complementary timesteps (TPC).
-\end{enumerate}
+\paragraph{TPC estimator.} Antithetic pairs $t_1 \sim \mathcal{U}[0,0.5]$, $t_2=1-t_1$ replace uniform sampling, with a consistency penalty:
+\begin{equation}
+    \mathcal{L}_{\text{TPC}} = \mathcal{L}(t_1) + \mathcal{L}(t_2) + \lambda\|\vt(\xt^{(1)},t_1) - \vt(\xt^{(2)},t_2)\|^2, \quad \lambda=0.1.
+    \label{eq:tpc}
+\end{equation}
 
-\paragraph{Research questions.} Each technique has been shown effective in isolation, but their joint behavior is unknown. We ask:
-\begin{itemize}[leftmargin=*]
-    \item[\textbf{RQ1}] Are the three variance-reduction axes additive when composed?
-    \item[\textbf{RQ2}] Which single axis provides the largest improvement?
-    \item[\textbf{RQ3}] Do insights from 2D synthetic experiments transfer to high-dimensional image generation?
-\end{itemize}
-
-\paragraph{Approach.} We address these questions through two complementary studies. Study~1 (Section~\ref{sec:study1}) compares four flow-matching path variants on 2D distributions, providing geometric intuition about trajectory straightness, solver robustness, and sample quality. Study~2 (Section~\ref{sec:study2}) crosses the three variance-reduction axes in a full $2^3 = 8$-cell factorial ablation on CIFAR-10, measuring FID, training stability, trajectory geometry, and per-timestep variance.
-
-\paragraph{Preview of findings.} The results are striking and largely negative for the composition hypothesis. Only one of eight CIFAR-10 cells converged (BatchOT + CFM + Uniform, FID~18.4). The remaining seven diverged or oscillated. We provide detailed failure analysis showing that the techniques interfere catastrophically in high dimensions due to numerical instabilities that are invisible in 2D. BatchOT emerges as the single most impactful technique, consistent with \citet{tong2024improving}.
+\paragraph{Research questions.} Each technique works in isolation, but their composition is unexplored. We ask: \textbf{(RQ1)}~Are the three axes additive? \textbf{(RQ2)}~Which single axis helps most? \textbf{(RQ3)}~Do 2D geometric insights transfer to CIFAR-10?

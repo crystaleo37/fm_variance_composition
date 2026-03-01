@@ -1,70 +1,16 @@
-\section{Study 1: 2D Synthetic Experiments}
+\section{Study 1: 2D Experiments}
 \label{sec:study1}
 
-This section presents results from comparing four flow-matching path variants on 2D synthetic distributions. The goal is to build geometric intuition about how path design affects trajectory quality, solver robustness, and sample fidelity.
-
-\subsection{Single-Dataset Analysis: Checkerboard}
+Across three 2D datasets, two clear winners emerge. \textbf{SB-CFM} achieves the best endpoint quality on all three datasets (SWD@64 and MMD@64). \textbf{OT-CFM} produces the straightest trajectories (lowest curvature) on all three datasets and wins low-NFE robustness on two of three. At NFE${\leq}8$, OT and SB variants achieve SWD ${\sim}0.022$, while VP and Target reach ${\sim}0.040$---roughly 47\% worse. Table~\ref{tab:wins} summarizes the multi-dataset comparison.
 
 \begin{table}[H]
 \centering
-\caption{Endpoint quality on the checkerboard distribution at NFE=64. Lower is better for both metrics.}
-\label{tab:checkerboard}
-\begin{tabular}{@{}lcc@{}}
-\toprule
-Variant & SWD@64 & MMD@64 \\
-\midrule
-OT-CFM & 0.02049 & 0.000503 \\
-VP-CFM & 0.02655 & 0.000792 \\
-Target-CFM & 0.03004 & 0.001068 \\
-SB-CFM & \textbf{0.02016} & \textbf{0.000449} \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-SB-CFM achieves the best endpoint quality, improving SWD by 24\% and MMD by 43\% over VP-CFM. OT-CFM is a close second, within 2\% of SB-CFM on SWD. Figure~\ref{fig:samples_grid} shows generated samples from all four variants.
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.85\textwidth]{figures/study1/samples_grid.png}
-    \caption{Generated samples on the checkerboard distribution at NFE=64. All variants capture the mode structure, but VP-CFM and Target-CFM show more dispersion between modes.}
-    \label{fig:samples_grid}
-\end{figure}
-
-\subsection{NFE Robustness}
-
-The low-budget regime is more discriminative than endpoint quality. Figure~\ref{fig:nfe_swd} shows SWD as a function of NFE for all four variants.
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.7\textwidth]{figures/study1/nfe_vs_swd.png}
-    \caption{SWD vs.\ NFE on the checkerboard distribution. OT-CFM and SB-CFM maintain quality at low NFE, while VP-CFM degrades significantly below NFE=16.}
-    \label{fig:nfe_swd}
-\end{figure}
-
-At low NFE ($\leq 8$), OT-CFM and SB-CFM achieve SWD around 0.022, while VP-CFM and Target-CFM reach approximately 0.042 and 0.039 respectively---roughly 47\% worse. As NFE increases, VP-CFM improves strongly, indicating high discretization sensitivity. OT-type paths are inherently more solver-robust because their straighter trajectories require fewer integration steps to approximate accurately.
-
-\subsection{Trajectory Geometry}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.7\textwidth]{figures/study1/curvature_vs_error.png}
-    \caption{Trajectory curvature vs.\ endpoint error. OT-CFM and SB-CFM produce the straightest trajectories (curvature near 1.0), supporting their low-NFE robustness.}
-    \label{fig:curvature}
-\end{figure}
-
-OT-CFM and SB-CFM produce the straightest trajectories (mean curvature close to 1.0), while Target-CFM is substantially more curved. This directly explains the NFE robustness gap: straighter paths require fewer discretization steps to traverse accurately.
-
-\subsection{Multi-Dataset Generalization}
-
-Extending to three datasets (checkerboard, two\_moons, gaussian\_mixture) reveals consistent patterns. Table~\ref{tab:multi_wins} shows win counts across all metrics and datasets.
-
-\begin{table}[H]
-\centering
-\caption{Win counts across three datasets and five evaluation metrics. Each cell shows the number of datasets (out of 3) where the variant achieves the best value.}
-\label{tab:multi_wins}
+\caption{Win counts across 3 datasets and 5 metrics (out of 3 possible wins each).}
+\label{tab:wins}
+\small
 \begin{tabular}{@{}lccccc@{}}
 \toprule
-Variant & SWD@64 & MMD@64 & SWD@lowNFE & Curvature & AUC \\
+Variant & SWD@64 & MMD@64 & Low-NFE & Curvature & AUC \\
 \midrule
 OT-CFM & 0 & 0 & \textbf{2} & \textbf{3} & 0 \\
 VP-CFM & 0 & 0 & 0 & 0 & 0 \\
@@ -74,30 +20,4 @@ SB-CFM & \textbf{3} & \textbf{3} & 1 & 0 & \textbf{2} \\
 \end{tabular}
 \end{table}
 
-\begin{figure}[H]
-    \centering
-    \begin{subfigure}[b]{0.48\textwidth}
-        \includegraphics[width=\textwidth]{figures/study1/multi_dataset_heatmap.png}
-        \caption{Metric heatmap across datasets.}
-    \end{subfigure}
-    \hfill
-    \begin{subfigure}[b]{0.48\textwidth}
-        \includegraphics[width=\textwidth]{figures/study1/multi_dataset_wins.png}
-        \caption{Win counts by variant and metric.}
-    \end{subfigure}
-    \caption{Multi-dataset comparison. SB-CFM dominates endpoint quality; OT-CFM dominates trajectory straightness and low-NFE robustness.}
-    \label{fig:multi_dataset}
-\end{figure}
-
-\paragraph{Time-to-structure.} An interesting nuance emerges from the time-to-structure analysis: Target-CFM achieves the best AUC on checkerboard (fastest early structural progress), despite not winning endpoint quality. This suggests that ``early geometric progress'' and ``final sample fidelity'' are related but not equivalent objectives.
-
-\subsection{Key Takeaways from Study 1}
-
-\begin{enumerate}[leftmargin=*]
-    \item \textbf{SB-CFM wins endpoint quality} across all three datasets.
-    \item \textbf{OT-CFM wins trajectory straightness and low-NFE robustness} on most datasets.
-    \item Path design materially affects both sample quality and computational efficiency.
-    \item All four variants work well in 2D---no instabilities or divergence observed.
-\end{enumerate}
-
-The last point will prove critical: the 2D setting masks numerical issues that become catastrophic in high dimensions (Section~\ref{sec:discussion}).
+Crucially, \textbf{all four variants work flawlessly in 2D}---no instabilities, no divergence, smooth convergence across all datasets. This will prove misleading: the 2D setting masks numerical issues that become catastrophic in high dimensions (Section~\ref{sec:discussion}).

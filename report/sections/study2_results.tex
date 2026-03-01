@@ -1,96 +1,40 @@
-\section{Study 2: CIFAR-10 Factorial Ablation}
+\section{Study 2: CIFAR-10 Ablation}
 \label{sec:study2}
 
 \subsection{Training Outcomes}
 
-Table~\ref{tab:outcomes} presents the central result of the CIFAR-10 ablation: only 1 of 8 cells converged to a usable generative model.
+Table~\ref{tab:outcomes} presents the central result: only 1 of 8 cells converged.
 
 \begin{table}[H]
 \centering
-\caption{Training outcomes for all 8 cells. Status indicates whether the training loss converged smoothly, oscillated wildly (unstable), or diverged to NaN. Best FID is the minimum across all 15 solver/NFE combinations. Checkpoint indicates which model was used for evaluation.}
+\caption{Training outcomes for all 8 cells. Best FID is the minimum across 15 solver/NFE combinations.}
 \label{tab:outcomes}
+\small
 \begin{tabular}{@{}cccccrr@{}}
 \toprule
-Cell & Coupling & Objective & Estimator & Status & Best FID & Checkpoint \\
+Cell & Coupling & Objective & Estimator & Status & Best FID & Ckpt \\
 \midrule
-000 & Independent & CFM & Uniform & \textcolor{red}{NaN} & 679.2 & step 10k \\
-001 & Independent & CFM & TPC & \textcolor{red}{NaN} & 419.8 & step 10k \\
-010 & Independent & StableVM & Uniform & \textcolor{orange}{Unstable} & 256.8 & final \\
-011 & Independent & StableVM & TPC & \textcolor{orange}{Unstable} & 197.9 & final \\
-\textbf{100} & \textbf{BatchOT} & \textbf{CFM} & \textbf{Uniform} & \textcolor{green!60!black}{\textbf{Converged}} & \textbf{18.4} & \textbf{final} \\
-101 & BatchOT & CFM & TPC & \textcolor{red}{NaN} & 679.2 & step 10k \\
+000 & Indep. & CFM & Uniform & \textcolor{red}{NaN} & 679.2 & 10k \\
+001 & Indep. & CFM & TPC & \textcolor{red}{NaN} & 419.8 & 10k \\
+010 & Indep. & StableVM & Uniform & \textcolor{orange}{Unstable} & 256.8 & final \\
+011 & Indep. & StableVM & TPC & \textcolor{orange}{Unstable} & 197.9 & final \\
+\textbf{100} & \textbf{BatchOT} & \textbf{CFM} & \textbf{Uniform} & \textcolor{green!60!black}{\textbf{OK}} & \textbf{18.4} & \textbf{final} \\
+101 & BatchOT & CFM & TPC & \textcolor{red}{NaN} & 679.2 & 10k \\
 110 & BatchOT & StableVM & Uniform & \textcolor{orange}{Unstable} & 211.4 & final \\
 111 & BatchOT & StableVM & TPC & \textcolor{orange}{Unstable} & 273.6 & final \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\paragraph{Immediate observations.}
-\begin{itemize}[leftmargin=*]
-    \item BatchOT is necessary but not sufficient: cell\_100 converged, but cells 101, 110, 111 did not.
-    \item TPC causes NaN divergence in every configuration: cells 001, 101 both diverged (as did cell\_000, though for a different reason---see Section~\ref{sec:discussion}).
-    \item StableVM causes wild oscillation in every configuration: cells 010, 011, 110, 111 all show severely unstable loss.
-    \item The only successful combination is the simplest improved variant: BatchOT + standard CFM + Uniform sampling.
-\end{itemize}
-
-\subsection{Training Loss Curves}
-
-Figure~\ref{fig:training_curves} shows the training loss evolution for all 8 cells.
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=\textwidth]{figures/combined/combined_training_curves.pdf}
-    \caption{Training loss curves for all 8 ablation cells. Green titles indicate convergence, red indicates NaN divergence, orange indicates unstable oscillation. Red dashed lines mark the step at which NaN first appeared.}
-    \label{fig:training_curves}
-\end{figure}
-
-\textbf{Cell\_100} (BatchOT + CFM + Uniform) shows a smooth, monotonic decrease from 0.54 to 0.14 over 80k steps, characteristic of healthy flow-matching training.
-
-\textbf{Cells 000, 001, 101} diverge to NaN at steps ${\sim}18{,}700$, ${\sim}16{,}600$, and ${\sim}14{,}400$ respectively. The pre-NaN loss is relatively low (0.15--0.25), suggesting that the model was learning before numerical instability triggered a cascade.
-
-\textbf{Cells 010, 011, 110, 111} (all StableVM) exhibit extreme oscillation, with loss swinging between ${\sim}40$ and ${\sim}22{,}000$ throughout training. The model never stabilizes, despite 80k steps of training. This pattern is consistent across both coupling types and both estimators, pointing to StableVM as the root cause.
+Three patterns are immediate: (i)~BatchOT is necessary but not sufficient---cell\_100 converged, but 101/110/111 did not; (ii)~TPC causes NaN in every configuration (001, 101); (iii)~StableVM causes extreme loss oscillation (${\sim}40$ to ${\sim}22{,}000$) in all four cells where it appears (010, 011, 110, 111).
 
 \subsection{Cell\_100: The Only Successful Model}
 
-Since cell\_100 is the only cell that produced a meaningful generative model, we analyze it in detail.
+Figure~\ref{fig:cell100_fid} shows the FID--NFE trade-off for cell\_100. Training loss decreased smoothly from 0.54 to 0.14 over 80k steps. Midpoint is the most efficient solver, reaching FID~20.4 at NFE=40---matching Euler at NFE=100, a $2.5\times$ efficiency gain consistent with Study~1's trajectory-straightness findings. RK4 achieves the best absolute FID of 18.4 at NFE=100.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.7\textwidth]{figures/combined/cell_100_fid_detail.pdf}
-    \caption{FID vs.\ NFE for cell\_100 (BatchOT + CFM + Uniform), the only converged cell. Three ODE solvers are compared.}
+    \includegraphics[width=0.65\textwidth]{figures/combined/cell_100_fid_detail.pdf}
+    \caption{FID vs.\ NFE for cell\_100 (BatchOT + CFM + Uniform). Midpoint dominates at low NFE; RK4 wins at high NFE.}
     \label{fig:cell100_fid}
 \end{figure}
-
-Table~\ref{tab:cell100_fid} shows the full FID results for cell\_100.
-
-\begin{table}[H]
-\centering
-\caption{FID values for cell\_100 across solvers and NFE. Best value in each column is bolded.}
-\label{tab:cell100_fid}
-\begin{tabular}{@{}lccccc@{}}
-\toprule
-Solver & NFE=5 & NFE=10 & NFE=20 & NFE=40 & NFE=100 \\
-\midrule
-Euler & 41.1 & 29.7 & 24.5 & 21.1 & 19.1 \\
-Midpoint & \textbf{33.1} & \textbf{24.4} & \textbf{21.8} & \textbf{20.4} & 19.0 \\
-RK4 & 180.7 & 104.6 & 44.3 & 23.0 & \textbf{18.4} \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\paragraph{Solver behavior.} Midpoint achieves the best FID at low NFE (33.1 at NFE=5), outperforming Euler (41.1) by 19\%. RK4 struggles at very low NFE (180.7 at NFE=5) due to its high per-step cost---each ``step'' actually performs 4 function evaluations, so NFE=5 corresponds to barely one full integration step. At NFE=100, RK4 achieves the best FID of 18.4.
-
-\paragraph{Practical recommendation.} For cell\_100, midpoint is the most efficient solver: it reaches FID~20.4 at only 40 NFE, matching Euler at 100 NFE. This 2.5$\times$ efficiency gain from solver choice is consistent with the trajectory-straightness findings from Study~1---BatchOT coupling produces paths that are well-suited to moderate-order solvers.
-
-\subsection{Failed Cells: FID Context}
-
-For completeness, Table~\ref{fig:fid_bars} reports the best FID achieved by each cell, even though only cell\_100 represents a meaningful generative model.
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.85\textwidth]{figures/combined/fid_comparison_bars.pdf}
-    \caption{Best FID across all 8 cells. The stark contrast between cell\_100 (FID 18.4) and the rest (197--679) underscores the failure of the composition hypothesis.}
-    \label{fig:fid_bars}
-\end{figure}
-
-The FID values of 679.2 for cells 000, 101 correspond to pure noise (the model at step 10k had barely begun learning when evaluated from a pre-NaN checkpoint). Cells 010--011 and 110--111 achieve FIDs in the 197--290 range, reflecting models that learned some coarse structure despite never stabilizing. Cell\_001 at 419.8 falls between, having learned slightly more than cells 000/101 before diverging.
