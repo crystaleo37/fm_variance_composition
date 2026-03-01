@@ -12,3 +12,6 @@ data/cifar10/
 *.synctex.gz
 *.fdb_latexmk
 *.fls
+speech.md
+.claude/
+*.jsonl
