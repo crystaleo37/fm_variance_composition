@@ -1,0 +1,482 @@
+{
+  "datasets": [
+    "checkerboard",
+    "two_moons",
+    "gaussian_mixture"
+  ],
+  "per_dataset": {
+    "checkerboard": {
+      "config": {
+        "dataset_name": "checkerboard",
+        "n_train": 20000,
+        "n_eval": 5000,
+        "batch_size": 512,
+        "hidden_dim": 256,
+        "time_dim": 64,
+        "n_layers": 3,
+        "lr": 0.001,
+        "n_epochs": 200,
+        "steps_per_epoch": 50,
+        "weight_decay": 0.0,
+        "sigma": 0.1,
+        "nfe_list": [
+          8,
+          16,
+          32,
+          64,
+          128
+        ],
+        "solver_methods": [
+          "euler",
+          "heun",
+          "rk4"
+        ],
+        "seed": 42,
+        "device": "cpu",
+        "output_dir": "/Users/sleider/ml/flow_matching_project/results_multi_dataset/checkerboard",
+        "variants": {
+          "ot": "ExactOptimalTransportConditionalFlowMatcher",
+          "vp": "VariancePreservingConditionalFlowMatcher",
+          "target": "TargetConditionalFlowMatcher",
+          "schrodinger": "SchrodingerBridgeConditionalFlowMatcher"
+        }
+      },
+      "main_metrics": {
+        "ot": {
+          "SWD@64": 0.02048761025003497,
+          "MMD@64": 0.0005030035972595215
+        },
+        "vp": {
+          "SWD@64": 0.02654558057328038,
+          "MMD@64": 0.0007921457290649414
+        },
+        "target": {
+          "SWD@64": 0.030039973550291983,
+          "MMD@64": 0.0010676383972167969
+        },
+        "schrodinger": {
+          "SWD@64": 0.02015543442709987,
+          "MMD@64": 0.0004488229751586914
+        }
+      },
+      "nfe_summary": {
+        "ot": {
+          "SWD_low_nfe": 0.022176824401409365,
+          "SWD_high_nfe": 0.02095296035834096,
+          "MMD_low_nfe": 0.0005400180816650391,
+          "MMD_high_nfe": 0.0005030035972595215
+        },
+        "vp": {
+          "SWD_low_nfe": 0.042255466771191325,
+          "SWD_high_nfe": 0.025526353560578134,
+          "MMD_low_nfe": 0.0017128288745880127,
+          "MMD_high_nfe": 0.0007921457290649414
+        },
+        "target": {
+          "SWD_low_nfe": 0.038714349780498675,
+          "SWD_high_nfe": 0.031347722146080136,
+          "MMD_low_nfe": 0.0018296241760253906,
+          "MMD_high_nfe": 0.0010676383972167969
+        },
+        "schrodinger": {
+          "SWD_low_nfe": 0.022102669752847387,
+          "SWD_high_nfe": 0.020472644529070515,
+          "MMD_low_nfe": 0.0006937980651855469,
+          "MMD_high_nfe": 0.0004488229751586914
+        }
+      },
+      "scorecard": {
+        "ot": {
+          "SWD@64": 0.02048761025003497,
+          "MMD@64": 0.0005030035972595215,
+          "SWD@lowNFE": 0.022176824401409365,
+          "curvature_mean": 1.0058531761169434,
+          "progress_auc_swd": 0.1547777872037841
+        },
+        "vp": {
+          "SWD@64": 0.02654558057328038,
+          "MMD@64": 0.0007921457290649414,
+          "SWD@lowNFE": 0.042255466771191325,
+          "curvature_mean": 1.1508229970932007,
+          "progress_auc_swd": 0.17406510531145614
+        },
+        "target": {
+          "SWD@64": 0.030039973550291983,
+          "MMD@64": 0.0010676383972167969,
+          "SWD@lowNFE": 0.038714349780498675,
+          "curvature_mean": 1.7506577968597412,
+          "progress_auc_swd": 0.11186425155028701
+        },
+        "schrodinger": {
+          "SWD@64": 0.02015543442709987,
+          "MMD@64": 0.0004488229751586914,
+          "SWD@lowNFE": 0.022102669752847387,
+          "curvature_mean": 1.010156273841858,
+          "progress_auc_swd": 0.15515083802165464
+        }
+      },
+      "progress_auc_swd": {
+        "ot": 0.1547777872037841,
+        "vp": 0.17406510531145614,
+        "target": 0.11186425155028701,
+        "schrodinger": 0.15515083802165464
+      }
+    },
+    "two_moons": {
+      "config": {
+        "dataset_name": "two_moons",
+        "n_train": 20000,
+        "n_eval": 5000,
+        "batch_size": 512,
+        "hidden_dim": 256,
+        "time_dim": 64,
+        "n_layers": 3,
+        "lr": 0.001,
+        "n_epochs": 200,
+        "steps_per_epoch": 50,
+        "weight_decay": 0.0,
+        "sigma": 0.1,
+        "nfe_list": [
+          8,
+          16,
+          32,
+          64,
+          128
+        ],
+        "solver_methods": [
+          "euler",
+          "heun",
+          "rk4"
+        ],
+        "seed": 42,
+        "device": "cpu",
+        "output_dir": "/Users/sleider/ml/flow_matching_project/results_multi_dataset/two_moons",
+        "variants": {
+          "ot": "ExactOptimalTransportConditionalFlowMatcher",
+          "vp": "VariancePreservingConditionalFlowMatcher",
+          "target": "TargetConditionalFlowMatcher",
+          "schrodinger": "SchrodingerBridgeConditionalFlowMatcher"
+        }
+      },
+      "main_metrics": {
+        "ot": {
+          "SWD@64": 0.034110695330867496,
+          "MMD@64": 0.0013108551502227783
+        },
+        "vp": {
+          "SWD@64": 0.030504763824400354,
+          "MMD@64": 0.001138538122177124
+        },
+        "target": {
+          "SWD@64": 0.04096703761731825,
+          "MMD@64": 0.0016486942768096924
+        },
+        "schrodinger": {
+          "SWD@64": 0.017105812304038175,
+          "MMD@64": 0.00033017992973327637
+        }
+      },
+      "nfe_summary": {
+        "ot": {
+          "SWD_low_nfe": 0.03955971526825795,
+          "SWD_high_nfe": 0.0331242168849545,
+          "MMD_low_nfe": 0.002103149890899658,
+          "MMD_high_nfe": 0.0013108551502227783
+        },
+        "vp": {
+          "SWD_low_nfe": 0.06149809900886845,
+          "SWD_high_nfe": 0.03148373748829744,
+          "MMD_low_nfe": 0.004911154508590698,
+          "MMD_high_nfe": 0.001138538122177124
+        },
+        "target": {
+          "SWD_low_nfe": 0.0450596152721396,
+          "SWD_high_nfe": 0.04035034998913854,
+          "MMD_low_nfe": 0.003284275531768799,
+          "MMD_high_nfe": 0.0016486942768096924
+        },
+        "schrodinger": {
+          "SWD_low_nfe": 0.04893380404375723,
+          "SWD_high_nfe": 0.017915125833374068,
+          "MMD_low_nfe": 0.003179103136062622,
+          "MMD_high_nfe": 0.00033017992973327637
+        }
+      },
+      "scorecard": {
+        "ot": {
+          "SWD@64": 0.034110695330867496,
+          "MMD@64": 0.0013108551502227783,
+          "SWD@lowNFE": 0.03955971526825795,
+          "curvature_mean": 1.0214601755142212,
+          "progress_auc_swd": 0.13250646338565275
+        },
+        "vp": {
+          "SWD@64": 0.030504763824400354,
+          "MMD@64": 0.001138538122177124,
+          "SWD@lowNFE": 0.06149809900886845,
+          "curvature_mean": 1.2399672269821167,
+          "progress_auc_swd": 0.16924260191444773
+        },
+        "target": {
+          "SWD@64": 0.04096703761731825,
+          "MMD@64": 0.0016486942768096924,
+          "SWD@lowNFE": 0.0450596152721396,
+          "curvature_mean": 2.091695785522461,
+          "progress_auc_swd": 0.1798474010429345
+        },
+        "schrodinger": {
+          "SWD@64": 0.017105812304038175,
+          "MMD@64": 0.00033017992973327637,
+          "SWD@lowNFE": 0.04893380404375723,
+          "curvature_mean": 1.023292064666748,
+          "progress_auc_swd": 0.12645465017703827
+        }
+      },
+      "progress_auc_swd": {
+        "ot": 0.13250646338565275,
+        "vp": 0.16924260191444773,
+        "target": 0.1798474010429345,
+        "schrodinger": 0.12645465017703827
+      }
+    },
+    "gaussian_mixture": {
+      "config": {
+        "dataset_name": "gaussian_mixture",
+        "n_train": 20000,
+        "n_eval": 5000,
+        "batch_size": 512,
+        "hidden_dim": 256,
+        "time_dim": 64,
+        "n_layers": 3,
+        "lr": 0.001,
+        "n_epochs": 200,
+        "steps_per_epoch": 50,
+        "weight_decay": 0.0,
+        "sigma": 0.1,
+        "nfe_list": [
+          8,
+          16,
+          32,
+          64,
+          128
+        ],
+        "solver_methods": [
+          "euler",
+          "heun",
+          "rk4"
+        ],
+        "seed": 42,
+        "device": "cpu",
+        "output_dir": "/Users/sleider/ml/flow_matching_project/results_multi_dataset/gaussian_mixture",
+        "variants": {
+          "ot": "ExactOptimalTransportConditionalFlowMatcher",
+          "vp": "VariancePreservingConditionalFlowMatcher",
+          "target": "TargetConditionalFlowMatcher",
+          "schrodinger": "SchrodingerBridgeConditionalFlowMatcher"
+        }
+      },
+      "main_metrics": {
+        "ot": {
+          "SWD@64": 0.038730533217008825,
+          "MMD@64": 0.0008279979228973389
+        },
+        "vp": {
+          "SWD@64": 0.03424669563495909,
+          "MMD@64": 0.0009045004844665527
+        },
+        "target": {
+          "SWD@64": 0.04829490085751001,
+          "MMD@64": 0.002858400344848633
+        },
+        "schrodinger": {
+          "SWD@64": 0.02047374306549143,
+          "MMD@64": 0.0005567371845245361
+        }
+      },
+      "nfe_summary": {
+        "ot": {
+          "SWD_low_nfe": 0.04160339527190633,
+          "SWD_high_nfe": 0.03772106458693031,
+          "MMD_low_nfe": 0.001168578863143921,
+          "MMD_high_nfe": 0.0008279979228973389
+        },
+        "vp": {
+          "SWD_low_nfe": 0.06868807232784191,
+          "SWD_high_nfe": 0.03353474348096569,
+          "MMD_low_nfe": 0.0038781166076660156,
+          "MMD_high_nfe": 0.0009045004844665527
+        },
+        "target": {
+          "SWD_low_nfe": 0.05526307287545761,
+          "SWD_high_nfe": 0.047438081427223354,
+          "MMD_low_nfe": 0.003252565860748291,
+          "MMD_high_nfe": 0.002858400344848633
+        },
+        "schrodinger": {
+          "SWD_low_nfe": 0.048819060180184344,
+          "SWD_high_nfe": 0.01980661807420354,
+          "MMD_low_nfe": 0.0043603479862213135,
+          "MMD_high_nfe": 0.0005567371845245361
+        }
+      },
+      "scorecard": {
+        "ot": {
+          "SWD@64": 0.038730533217008825,
+          "MMD@64": 0.0008279979228973389,
+          "SWD@lowNFE": 0.04160339527190633,
+          "curvature_mean": 1.0258444547653198,
+          "progress_auc_swd": 0.12673170931520872
+        },
+        "vp": {
+          "SWD@64": 0.03424669563495909,
+          "MMD@64": 0.0009045004844665527,
+          "SWD@lowNFE": 0.06868807232784191,
+          "curvature_mean": 1.4831689596176147,
+          "progress_auc_swd": 0.1623283671506215
+        },
+        "target": {
+          "SWD@64": 0.04829490085751001,
+          "MMD@64": 0.002858400344848633,
+          "SWD@lowNFE": 0.05526307287545761,
+          "curvature_mean": 3.095916509628296,
+          "progress_auc_swd": 0.1597529725113418
+        },
+        "schrodinger": {
+          "SWD@64": 0.02047374306549143,
+          "MMD@64": 0.0005567371845245361,
+          "SWD@lowNFE": 0.048819060180184344,
+          "curvature_mean": 1.0286390781402588,
+          "progress_auc_swd": 0.11760055366903543
+        }
+      },
+      "progress_auc_swd": {
+        "ot": 0.12673170931520872,
+        "vp": 0.1623283671506215,
+        "target": 0.1597529725113418,
+        "schrodinger": 0.11760055366903543
+      }
+    }
+  },
+  "aggregate_scorecards": {
+    "checkerboard": {
+      "ot": {
+        "SWD@64": 0.02048761025003497,
+        "MMD@64": 0.0005030035972595215,
+        "SWD@lowNFE": 0.022176824401409365,
+        "curvature_mean": 1.0058531761169434,
+        "progress_auc_swd": 0.1547777872037841
+      },
+      "vp": {
+        "SWD@64": 0.02654558057328038,
+        "MMD@64": 0.0007921457290649414,
+        "SWD@lowNFE": 0.042255466771191325,
+        "curvature_mean": 1.1508229970932007,
+        "progress_auc_swd": 0.17406510531145614
+      },
+      "target": {
+        "SWD@64": 0.030039973550291983,
+        "MMD@64": 0.0010676383972167969,
+        "SWD@lowNFE": 0.038714349780498675,
+        "curvature_mean": 1.7506577968597412,
+        "progress_auc_swd": 0.11186425155028701
+      },
+      "schrodinger": {
+        "SWD@64": 0.02015543442709987,
+        "MMD@64": 0.0004488229751586914,
+        "SWD@lowNFE": 0.022102669752847387,
+        "curvature_mean": 1.010156273841858,
+        "progress_auc_swd": 0.15515083802165464
+      }
+    },
+    "two_moons": {
+      "ot": {
+        "SWD@64": 0.034110695330867496,
+        "MMD@64": 0.0013108551502227783,
+        "SWD@lowNFE": 0.03955971526825795,
+        "curvature_mean": 1.0214601755142212,
+        "progress_auc_swd": 0.13250646338565275
+      },
+      "vp": {
+        "SWD@64": 0.030504763824400354,
+        "MMD@64": 0.001138538122177124,
+        "SWD@lowNFE": 0.06149809900886845,
+        "curvature_mean": 1.2399672269821167,
+        "progress_auc_swd": 0.16924260191444773
+      },
+      "target": {
+        "SWD@64": 0.04096703761731825,
+        "MMD@64": 0.0016486942768096924,
+        "SWD@lowNFE": 0.0450596152721396,
+        "curvature_mean": 2.091695785522461,
+        "progress_auc_swd": 0.1798474010429345
+      },
+      "schrodinger": {
+        "SWD@64": 0.017105812304038175,
+        "MMD@64": 0.00033017992973327637,
+        "SWD@lowNFE": 0.04893380404375723,
+        "curvature_mean": 1.023292064666748,
+        "progress_auc_swd": 0.12645465017703827
+      }
+    },
+    "gaussian_mixture": {
+      "ot": {
+        "SWD@64": 0.038730533217008825,
+        "MMD@64": 0.0008279979228973389,
+        "SWD@lowNFE": 0.04160339527190633,
+        "curvature_mean": 1.0258444547653198,
+        "progress_auc_swd": 0.12673170931520872
+      },
+      "vp": {
+        "SWD@64": 0.03424669563495909,
+        "MMD@64": 0.0009045004844665527,
+        "SWD@lowNFE": 0.06868807232784191,
+        "curvature_mean": 1.4831689596176147,
+        "progress_auc_swd": 0.1623283671506215
+      },
+      "target": {
+        "SWD@64": 0.04829490085751001,
+        "MMD@64": 0.002858400344848633,
+        "SWD@lowNFE": 0.05526307287545761,
+        "curvature_mean": 3.095916509628296,
+        "progress_auc_swd": 0.1597529725113418
+      },
+      "schrodinger": {
+        "SWD@64": 0.02047374306549143,
+        "MMD@64": 0.0005567371845245361,
+        "SWD@lowNFE": 0.048819060180184344,
+        "curvature_mean": 1.0286390781402588,
+        "progress_auc_swd": 0.11760055366903543
+      }
+    }
+  },
+  "wins": {
+    "ot": {
+      "SWD@64": 0,
+      "MMD@64": 0,
+      "SWD@lowNFE": 2,
+      "curvature_mean": 3,
+      "progress_auc_swd": 0
+    },
+    "vp": {
+      "SWD@64": 0,
+      "MMD@64": 0,
+      "SWD@lowNFE": 0,
+      "curvature_mean": 0,
+      "progress_auc_swd": 0
+    },
+    "target": {
+      "SWD@64": 0,
+      "MMD@64": 0,
+      "SWD@lowNFE": 0,
+      "curvature_mean": 0,
+      "progress_auc_swd": 1
+    },
+    "schrodinger": {
+      "SWD@64": 3,
+      "MMD@64": 3,
+      "SWD@lowNFE": 1,
+      "curvature_mean": 0,
+      "progress_auc_swd": 2
+    }
+  }
+}

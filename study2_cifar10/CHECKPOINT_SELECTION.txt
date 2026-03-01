@@ -1,0 +1,12 @@
+Checkpoint selection mapping (copied as best.pt into projet_amine):
+- cell_000 <- outputs/cell_000/seed_0/checkpoints/step_0010000.pt
+- cell_001 <- outputs/cell_001/seed_0/checkpoints/step_0010000.pt
+- cell_010 <- outputs/cell_010/seed_0/checkpoints/final.pt
+- cell_011 <- outputs/cell_011/seed_0/checkpoints/final.pt
+- cell_100 <- outputs/cell_100/seed_0/checkpoints/final.pt
+- cell_101 <- outputs/cell_101/seed_0/checkpoints/step_0010000.pt
+- cell_110 <- outputs/cell_110/seed_0/checkpoints/final.pt
+- cell_111 <- outputs/cell_111/seed_0/checkpoints/final.pt
+
+Original outputs/checkpoints in the source project were not modified or deleted.
+All selected checkpoints were copied into projet_amine as best.pt files.

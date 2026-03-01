@@ -1,0 +1,17 @@
+step,t_0.050,t_0.097,t_0.145,t_0.192,t_0.239,t_0.287,t_0.334,t_0.382,t_0.429,t_0.476,t_0.524,t_0.571,t_0.618,t_0.666,t_0.713,t_0.761,t_0.808,t_0.855,t_0.903,t_0.950
+5000,156259.515625,139358.968750,124569.203125,111823.890625,100998.562500,91939.929688,84468.171875,78415.562500,73666.375000,70165.289062,67915.757812,66993.257812,67567.523438,69926.164062,74520.093750,82073.632812,93719.046875,110610.617188,130098.164062,127545.320312
+10000,146340.015625,121069.914062,101777.125000,86814.351562,75104.500000,65851.757812,58466.777344,52567.433594,47930.527344,44460.890625,42126.898438,40870.132812,40608.187500,41285.886719,42864.378906,45408.335938,49407.734375,55988.484375,66374.984375,76899.343750
+15000,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan
+20000,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan
+25000,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan
+30000,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan
+35000,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan
+40000,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan
+45000,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan
+50000,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan
+55000,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan
+60000,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan
+65000,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan
+70000,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan
+75000,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan
+80000,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan

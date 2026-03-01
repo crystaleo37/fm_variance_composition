@@ -1,0 +1,78 @@
+\section{Methodology}
+\label{sec:methodology}
+
+\subsection{Study 1: 2D Synthetic Experiments}
+
+\paragraph{Datasets.} Three 2D synthetic distributions are used: \texttt{checkerboard} (8 modes in a grid pattern), \texttt{two\_moons} (two interleaving crescents), and \texttt{gaussian\_mixture} (a mixture of Gaussians). These distributions provide direct visual access to generated samples and transport trajectories.
+
+\paragraph{Variants compared.} Four flow-matching variants are trained with identical architectures:
+\begin{itemize}[leftmargin=*]
+    \item \textbf{OT-CFM}: Optimal-transport conditional path (Section~\ref{sec:background}, Eq.~\ref{eq:ot_mu}--\ref{eq:ot_vf}).
+    \item \textbf{VP-CFM}: VP-diffusion conditional path, using the variance-preserving noise schedule of \citet{song2021scorebased} with $\beta_{\min}=0.1$, $\beta_{\max}=20$.
+    \item \textbf{Target-CFM}: A path conditioned on both source and target, without OT coupling.
+    \item \textbf{SB-CFM}: Schr\"odinger Bridge CFM, using the entropic OT formulation.
+\end{itemize}
+
+\paragraph{Architecture.} The velocity field is a time-conditioned MLP with 3 hidden layers of 256 units and SiLU activations. Training uses Adam \citep{kingma2015adam} with learning rate $10^{-3}$ for 10,000 steps.
+
+\paragraph{Evaluation metrics.}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{SWD} (Sliced Wasserstein Distance): Endpoint sample quality, computed between 10,000 generated and reference samples.
+    \item \textbf{MMD} (Maximum Mean Discrepancy): Second endpoint quality metric with Gaussian kernel.
+    \item \textbf{NFE-vs-SWD curves}: Sample quality as a function of the number of ODE solver function evaluations, testing robustness to limited compute budgets.
+    \item \textbf{Trajectory curvature}: Mean second-order finite difference along sampled ODE trajectories; lower values indicate straighter paths.
+    \item \textbf{Time-to-structure AUC}: Area under the SWD-over-time curve, measuring how quickly meaningful structure appears during the ODE integration.
+\end{itemize}
+
+\subsection{Study 2: CIFAR-10 Factorial Ablation}
+
+\paragraph{Experimental design.} The three variance-reduction axes are crossed in a full $2^3$ factorial design, yielding 8 cells. Table~\ref{tab:cells} summarizes the design.
+
+\begin{table}[H]
+\centering
+\caption{$2^3$ factorial ablation design. Binary encoding: bit 2 = Coupling, bit 1 = Objective, bit 0 = Estimator. A value of 0 selects the baseline; 1 selects the improved variant.}
+\label{tab:cells}
+\begin{tabular}{@{}ccccc@{}}
+\toprule
+Cell & Binary & Coupling & Objective & Estimator \\
+\midrule
+0 & 000 & Independent & CFM & Uniform \\
+1 & 001 & Independent & CFM & TPC \\
+2 & 010 & Independent & StableVM & Uniform \\
+3 & 011 & Independent & StableVM & TPC \\
+4 & 100 & BatchOT & CFM & Uniform \\
+5 & 101 & BatchOT & CFM & TPC \\
+6 & 110 & BatchOT & StableVM & Uniform \\
+7 & 111 & BatchOT & StableVM & TPC \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Architecture.} All cells share a U-Net backbone with:
+\begin{itemize}[leftmargin=*]
+    \item Base channels: 64 (fast mode), channel multipliers $[1, 2, 2, 2]$.
+    \item Sinusoidal time embedding (dimension 64) projected through a 2-layer MLP with SiLU.
+    \item Multi-head self-attention (4 heads) at $16 \times 16$ resolution.
+    \item 2 residual blocks per resolution level, with GroupNorm(32) and dropout.
+    \item Total: approximately 9M parameters.
+\end{itemize}
+
+\paragraph{Training.} All cells are trained with identical hyperparameters:
+\begin{itemize}[leftmargin=*]
+    \item Optimizer: Adam ($\text{lr} = 10^{-4}$, $\beta_1 = 0.9$, $\beta_2 = 0.999$).
+    \item EMA decay: 0.9999. Mixed precision: fp16.
+    \item Batch size: 256. Total steps: 80,000 (20.5M images seen).
+    \item Dataset: CIFAR-10 training set (50,000 images, $32 \times 32 \times 3$).
+    \item Hardware: AMD MI210 GPUs (ROCm 6.0) on a SLURM cluster.
+\end{itemize}
+
+\paragraph{Diagnostics.} Every 5,000 steps, three diagnostic quantities are computed on a held-out batch of 64 samples:
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Curvature proxy}: Mean second-order finite difference along Euler trajectories (50~NFE).
+    \item \textbf{Backtracking fraction}: Proportion of intermediate steps where the velocity points away from the final endpoint (cosine angle $< 0$).
+    \item \textbf{Per-timestep variance}: Variance of per-sample squared errors at 20 evenly-spaced timesteps in $[0.05, 0.95]$.
+\end{itemize}
+
+\paragraph{Evaluation.} After training, each cell is evaluated by generating 10,000 samples at NFE $\in \{5, 10, 20, 40, 100\}$ with three ODE solvers (Euler, midpoint, RK4). FID \citep{heusel2017gans} is computed via \texttt{torch-fidelity} against the CIFAR-10 training set. This yields 15 FID measurements per cell.
+
+\paragraph{Checkpoint selection.} For cells that diverged to NaN during training (cells 000, 001, 101), the checkpoint at step 10,000 (before divergence) was used for evaluation. All other cells used the final checkpoint. This policy ensures that every cell produces FID numbers, even if they reflect a partially-trained model.

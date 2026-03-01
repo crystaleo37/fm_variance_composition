@@ -1,0 +1,83 @@
+\section{Background}
+\label{sec:background}
+
+\subsection{Continuous Normalizing Flows}
+
+A continuous normalizing flow (CNF) defines a time-dependent diffeomorphism $\phi_t : \R^d \to \R^d$ via an ordinary differential equation (ODE):
+\begin{equation}
+    \frac{d\phi_t(x)}{dt} = \vt(\phi_t(x), t), \quad \phi_0(x) = x,
+    \label{eq:cnf}
+\end{equation}
+where $\vt : \R^d \times [0,1] \to \R^d$ is a neural velocity field parameterized by $\theta$. If $p_0$ denotes a simple prior (e.g., $\mathcal{N}(0, I)$), then $p_t = [\phi_t]_\# p_0$ is the pushforward distribution at time $t$, and the goal is $p_1 \approx q$ where $q$ is the data distribution.
+
+\subsection{Flow Matching}
+
+\citet{lipman2023flow} propose to train $\vt$ by directly regressing against a target vector field $\ut$ that generates a prescribed probability path $p_t$ from $p_0$ to $p_1$. The \textbf{Flow Matching} loss is:
+\begin{equation}
+    \mathcal{L}_{\text{FM}}(\theta) = \E_{t \sim \mathcal{U}[0,1]} \E_{x \sim p_t} \left\| \vt(x, t) - \ut(x) \right\|^2.
+    \label{eq:fm_loss}
+\end{equation}
+This loss is intractable because $p_t$ and $\ut$ depend on the full data distribution. The key insight is to decompose via conditional probability paths.
+
+\subsection{Conditional Flow Matching}
+
+Define a \emph{conditional} probability path $p_t(x | x_1)$ for each data point $x_1 \sim q$, with corresponding conditional vector field $\ut(x | x_1)$. The marginal path is recovered as $p_t(x) = \int p_t(x | x_1) q(x_1) \, dx_1$. The \textbf{CFM loss} is:
+\begin{equation}
+    \mathcal{L}_{\text{CFM}}(\theta) = \E_{t \sim \mathcal{U}[0,1]} \E_{x_1 \sim q} \E_{x \sim p_t(\cdot | x_1)} \left\| \vt(x, t) - \ut(x | x_1) \right\|^2.
+    \label{eq:cfm_loss}
+\end{equation}
+\citet{lipman2023flow} prove (Theorem~2) that $\nabla_\theta \mathcal{L}_{\text{CFM}} = \nabla_\theta \mathcal{L}_{\text{FM}}$, so minimizing the tractable CFM loss is equivalent to minimizing the FM loss.
+
+\subsection{OT Probability Path}
+
+The \textbf{optimal-transport} conditional path (Eq.~22 of \citealt{lipman2023flow}) uses linear interpolation:
+\begin{align}
+    \mu_t(x_1) &= t \cdot x_1, \label{eq:ot_mu} \\
+    \sigma_t &= 1 - (1 - \sigma_{\min}) t, \quad \sigma_{\min} = 10^{-4}, \label{eq:ot_sigma} \\
+    p_t(x | x_1) &= \mathcal{N}\!\left(x \,\middle|\, \mu_t(x_1),\, \sigma_t^2 I\right), \label{eq:ot_path}
+\end{align}
+with conditional vector field:
+\begin{equation}
+    \ut(x | x_1) = \frac{x_1 - (1 - \sigma_{\min}) x}{1 - (1 - \sigma_{\min}) t}.
+    \label{eq:ot_vf}
+\end{equation}
+The sampling process interpolates $x_t = \mu_t(x_1) + \sigma_t \, x_0$ where $x_0 \sim \mathcal{N}(0, I)$.
+
+\subsection{BatchOT Coupling}
+\label{sec:batchot}
+
+In standard CFM, the noise $x_0 \sim p_0$ is sampled independently of $x_1 \sim q$. \citet{tong2024improving} propose \textbf{minibatch optimal transport coupling}: within each minibatch of size $B$, solve an entropic OT problem between the $B$ noise samples and $B$ data samples to find an assignment that minimizes total squared Euclidean cost. The implementation uses:
+\begin{enumerate}
+    \item Sinkhorn's algorithm \citep{cuturi2013sinkhorn} in log-domain with regularization $\epsilon = 0.05$ and 100 iterations, yielding an approximate transport plan $\pi \in \R^{B \times B}_+$.
+    \item The Hungarian algorithm to extract a deterministic one-to-one assignment from $\pi$, respecting both marginals exactly.
+\end{enumerate}
+The resulting paired samples $(x_0^{\pi(i)}, x_1^i)$ produce shorter, straighter interpolation paths, reducing variance of the conditional vector field.
+
+\subsection{StableVM Objective}
+\label{sec:stablevm}
+
+Instead of regressing against the single-sample conditional target $\ut(x | x_1)$, the StableVM objective approximates the \emph{marginal} vector field using $K$ reference samples from a FIFO memory bank. For each training point $\xt$ at time $t$:
+\begin{align}
+    w_k &= \softmax_k \left( \log p_t(\xt | x_1^{(k)}) \right), \quad k = 1, \ldots, K, \label{eq:stablevm_weights} \\
+    \ut^{\text{VM}}(\xt) &= \sum_{k=1}^{K} w_k \cdot \ut(\xt | x_1^{(k)}), \label{eq:stablevm_target}
+\end{align}
+where $\{x_1^{(k)}\}_{k=1}^K$ are drawn from the memory bank. The log-probability under the OT path is:
+\begin{equation}
+    \log p_t(x | x_1) = -\frac{d}{2} \log(2\pi) - d \log \sigma_t - \frac{1}{2\sigma_t^2} \|x - \mu_t(x_1)\|^2,
+    \label{eq:log_prob}
+\end{equation}
+where $d$ is the data dimension. The term $-d \log \sigma_t$ will prove critical in our failure analysis (Section~\ref{sec:discussion}).
+
+\subsection{TPC Estimator}
+\label{sec:tpc}
+
+The Temporal Pair Consistency (TPC) estimator replaces uniform timestep sampling with antithetic pairs:
+\begin{equation}
+    t_1 \sim \mathcal{U}[0, 0.5], \quad t_2 = 1 - t_1,
+\end{equation}
+and adds a consistency penalty coupling velocity predictions at complementary timesteps:
+\begin{equation}
+    \mathcal{L}_{\text{TPC}} = \mathcal{L}_{\text{CFM}}(t_1) + \mathcal{L}_{\text{CFM}}(t_2) + \lambda \left\| \vt(\xt^{(1)}, t_1) - \vt(\xt^{(2)}, t_2) \right\|^2,
+    \label{eq:tpc_loss}
+\end{equation}
+where $\lambda = 0.1$ and $\xt^{(i)}$ are freshly sampled at each timestep. The antithetic design ensures coverage of both time extremes in every step, and the penalty encourages temporal coherence.

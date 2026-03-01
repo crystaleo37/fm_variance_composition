@@ -1,0 +1,20 @@
+\section{Conclusion}
+\label{sec:conclusion}
+
+We investigated whether three independently proposed variance-reduction techniques for Conditional Flow Matching---BatchOT coupling, StableVM objective, and TPC estimator---compose additively when combined. Through a $2^3$ factorial ablation on CIFAR-10, complemented by 2D synthetic experiments, we find that the answer is decisively negative.
+
+\textbf{BatchOT coupling is the single most impactful technique.} It is the only axis whose inclusion leads to successful training (cell\_100, FID~18.4), acting simultaneously as a variance reducer and a numerical stabilizer for the OT probability path. This finding is consistent with \citet{tong2024improving} and validates BatchOT as the recommended default for CFM training.
+
+\textbf{StableVM and TPC fail in high dimensions.} StableVM's importance weights scale with the data dimension $d$, causing softmax collapse when $d = 3072$. TPC's consistency penalty couples velocity predictions at complementary timesteps whose magnitudes differ by orders of magnitude. Both techniques work in 2D ($d=2$) but break catastrophically on CIFAR-10.
+
+\textbf{2D experiments inform geometry but not stability.} Study~1's finding that OT-type paths produce straighter trajectories transfers to CIFAR-10 (cell\_100's solver efficiency confirms this). However, the absence of instabilities in 2D gives false confidence about numerical robustness in high dimensions.
+
+\paragraph{Future directions.} The negative results suggest concrete remediation strategies:
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Dimension-normalized StableVM}: Replace $\log p_t$ with $\frac{1}{d}\log p_t$ in the importance weights to prevent softmax collapse.
+    \item \textbf{Gradient-stopped TPC}: Detach the consistency penalty from the computational graph to prevent gradient explosions, or restrict antithetic pairs to $t \in [0.1, 0.9]$ to avoid extreme velocity mismatches.
+    \item \textbf{Gradient clipping + fp32}: Standard numerical safeguards may allow the baseline (cell\_000) and TPC cells to converge.
+    \item \textbf{Multi-seed validation}: Confirm the cell\_100 result with 3--5 seeds to establish confidence intervals.
+\end{itemize}
+
+These results carry a broader methodological lesson: variance-reduction techniques should be validated not only for their statistical properties but also for their numerical stability in the target dimension. A technique that reduces variance in expectation but introduces numerical catastrophes in practice is worse than the baseline it aims to improve.

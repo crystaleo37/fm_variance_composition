@@ -1,0 +1,54 @@
+\documentclass[11pt,a4paper]{article}
+
+% --- Packages ---
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{subcaption}
+\usepackage[colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue]{hyperref}
+\usepackage[round]{natbib}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{xcolor}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{multirow}
+\usepackage{enumitem}
+\usepackage{float}
+
+% --- Custom commands ---
+\newcommand{\vt}{v_\theta}
+\newcommand{\xt}{x_t}
+\newcommand{\ut}{u_t}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\Var}{\mathrm{Var}}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator{\softmax}{softmax}
+
+% --- Title ---
+\title{\textbf{Variance-Reduction Composition in Conditional Flow Matching:\\From 2D Experiments to CIFAR-10}}
+\author{
+  Sacha Leiderr \and Amine Soukane
+}
+\date{Master 2 Deep Learning --- March 2026}
+
+\begin{document}
+
+\maketitle
+
+\input{sections/abstract}
+\input{sections/introduction}
+\input{sections/background}
+\input{sections/methodology}
+\input{sections/study1_results}
+\input{sections/study2_results}
+\input{sections/discussion}
+\input{sections/limitations}
+\input{sections/conclusion}
+
+\bibliographystyle{plainnat}
+\bibliography{bibliography}
+
+\end{document}

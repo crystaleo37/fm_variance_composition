@@ -1,0 +1,16 @@
+\section{Limitations}
+\label{sec:limitations}
+
+Several design choices and constraints limit the generalizability of our findings:
+
+\paragraph{Single seed.} All CIFAR-10 cells were trained with a single seed (seed~0). While the training failures are consistent and reproducible (all StableVM cells oscillate, all TPC cells diverge), the exact FID of the converged cell\_100 carries no error bars. Multi-seed runs would strengthen confidence in the FID=18.4 result.
+
+\paragraph{Fast mode only.} Due to compute constraints, all cells used the fast training configuration (9M parameters, 80k steps) rather than the full configuration (47M parameters, 150k steps). While the relative comparisons remain valid (all cells share the same budget), the absolute FID of 18.4 is higher than what a fully-trained model would achieve. The failures, however, are likely to persist or worsen with longer training, since the instabilities appear early ($<20$k steps).
+
+\paragraph{No gradient clipping.} Standard practice in diffusion/flow-matching training includes gradient norm clipping (typically to 1.0). Our training pipeline does not use gradient clipping, which likely exacerbates the NaN divergence in cells 000, 001, and 101. With gradient clipping, some of these cells \emph{might} survive longer, though the underlying numerical issues would remain.
+
+\paragraph{fp16 mixed precision.} All training used fp16 automatic mixed precision. The OT path denominator $1-(1-\sigma_{\min})t$ reaches $10^{-4}$ near $t=1$, which is within fp16's representable range but close to its precision limit. Training in fp32 might prevent some NaN events, though at 2$\times$ memory cost.
+
+\paragraph{Different codebases.} Study~1 and Study~2 use independent codebases with different network architectures (MLP vs.\ U-Net), optimizers (lr=$10^{-3}$ vs.\ $10^{-4}$), and data domains (2D vs.\ images). While this mirrors realistic research settings, it means that direct numerical comparisons between the two studies are not meaningful---only qualitative insights transfer.
+
+\paragraph{CIFAR-10 only.} Results on CIFAR-10 ($32 \times 32$) may not generalize to higher-resolution datasets. The dimension-dependent failures of StableVM would only worsen at higher resolutions (e.g., $d = 3 \times 256 \times 256 = 196{,}608$ for $256 \times 256$ images).

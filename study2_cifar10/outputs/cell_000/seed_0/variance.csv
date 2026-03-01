@@ -1,0 +1,17 @@
+step,t_0.050,t_0.097,t_0.145,t_0.192,t_0.239,t_0.287,t_0.334,t_0.382,t_0.429,t_0.476,t_0.524,t_0.571,t_0.618,t_0.666,t_0.713,t_0.761,t_0.808,t_0.855,t_0.903,t_0.950
+5000,156181.437500,138041.000000,122108.148438,108558.984375,97278.289062,87974.156250,80361.195312,74249.679688,69525.273438,66127.289062,64042.062500,63323.554688,64127.851562,66758.703125,71744.664062,79956.945312,92670.773438,110959.820312,131401.359375,127821.695312
+10000,147165.281250,116326.835938,93934.960938,77367.937500,65146.843750,55847.464844,48558.527344,42816.398438,38554.046875,35659.402344,33980.484375,33357.980469,33644.109375,34830.039062,37065.839844,40682.035156,46363.597656,55679.765625,71051.414062,88106.500000
+15000,133662.406250,95647.320312,71734.328125,56129.839844,45240.789062,36863.234375,31001.275391,27445.419922,25371.667969,24199.980469,23479.126953,22905.585938,22531.113281,22681.517578,24074.658203,26976.529297,32197.775391,40933.546875,54028.164062,69360.359375
+20000,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan
+25000,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan
+30000,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan
+35000,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan
+40000,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan
+45000,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan
+50000,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan
+55000,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan
+60000,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan
+65000,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan
+70000,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan
+75000,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan
+80000,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan
